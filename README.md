@@ -1,6 +1,6 @@
 # NoviQue — Designed to Inspire
 
-Official website and installable Progressive Web App (PWA) for **NoviQue**, an independent design studio. Version 1.0.
+Official website and installable Progressive Web App (PWA) for **NoviQue**, an independent design studio. Version 1.5.
 
 **Live site:** https://novique.github.io/site
 
@@ -21,7 +21,7 @@ A fully self-contained, production-ready static PWA — no build step, no backen
 
 ## Tech stack
 
-Plain HTML, CSS and vanilla JavaScript (ES5-compatible, no framework, no bundler). Fonts: Sora (display) + Manrope (body), self-hosted. Icons: Font Awesome 6, self-hosted. Zero npm install required to run or deploy.
+Plain HTML, CSS and vanilla JavaScript (ES5-compatible, no framework, no bundler). Fonts: Permanent Marker (display) + Kalam (body), self-hosted. Icons: Font Awesome 6, self-hosted. Zero npm install required to run or deploy.
 
 ---
 
@@ -62,17 +62,49 @@ Nova is a local keyword-matching FAQ bot — see the `NOVA_FAQ` array in `js/app
 
 ## Connecting a real AI backend (optional)
 
-Nova currently answers from a small local knowledge base — this is intentional and safe for a static GitHub Pages site, since there's no server to hold an API key securely. If you later want Nova to use a real LLM:
+Nova answers from a small local knowledge base by default — this is safe for a static GitHub Pages site, since there's no server to hold an API key securely. If you want Nova to use a real LLM via OpenRouter, everything you need to change lives in **`js/config.openrouter.js`** — you never need to touch `app.js`:
 
-1. Stand up a small backend (Cloudflare Worker, Vercel function, or similar) that holds your AI provider's API key server-side.
-2. In `js/app.js`, find the `getNovaReply()` function and replace its body with a `fetch()` call to your backend endpoint, sending the user's message and returning the reply.
-3. **Never** put a provider API key directly in `app.js` or any file shipped to the browser — anyone can view it in dev tools.
+1. Open `js/config.openrouter.js`.
+2. **Quick testing only:** paste an OpenRouter API key into `OPENROUTER_API_KEY`. This works immediately but ships the key to the browser — anyone can read it in dev tools. Fine for local testing or a private/internal deployment, **not safe for a public production site**.
+3. **Safer, for production:** stand up a small backend (Cloudflare Worker, Vercel/Netlify function, etc.) that holds the real key server-side, then set `OPENROUTER_PROXY_URL` to point at it instead. When this is set, `OPENROUTER_API_KEY` is ignored.
+4. Leave both fields empty (the shipped default) and Nova keeps using her local FAQ answers — no key, no external call, nothing to secure.
+
+**Never** put a provider API key directly in `app.js`, `index.html`, or any other file shipped to the browser.
 
 ---
 
 ## Updating icons / branding
 
 All app icons are generated from `assets/img/logo.png` (2048×2048 source). If you update the logo, regenerate the icon set (`icons/icon-*.png`, `icons/maskable-*.png`, `icons/apple-touch-icon.png`, `icons/favicon*.png`, `icons/favicon.ico`) at the same sizes currently in the `icons/` folder.
+
+---
+
+## Building an Android APK (automatic, via GitHub Actions)
+
+This repo includes `.github/workflows/build-apk.yml`, which automatically wraps the site into an installable Android app (using Google's Bubblewrap/Trusted Web Activity tooling) and publishes it as a downloadable APK on the repo's **Releases** page — no local Android Studio or SDK setup required.
+
+**To trigger a build:**
+```bash
+git tag v1.5.0
+git push origin v1.5.0
+```
+A few minutes later, check the repo's **Actions** tab for build progress, then the **Releases** tab for the finished `.apk`.
+
+You can also trigger a build manually from **Actions → Build & Release APK → Run workflow**, without pushing a new tag.
+
+The APK is signed with an auto-generated debug key by default, which is fine for direct installs / sideloading. If you later want to publish to the Google Play Store, see the comment block at the bottom of the workflow file for how to swap in a proper release keystore via GitHub repo secrets.
+
+---
+
+## Connecting Nova to a real AI model (OpenRouter)
+
+Nova ships wired to a small local FAQ knowledge base by default (no key needed, works offline). If you want Nova to answer using a real AI model via [OpenRouter](https://openrouter.ai), everything you need to configure lives in **one file**: `js/config.openrouter.js`. You never need to edit `app.js` for this.
+
+Open `js/config.openrouter.js` and either:
+- Paste an OpenRouter API key into `OPENROUTER_API_KEY` for quick testing (see the security warning in that file — a key here is visible to anyone who views the page source, so this isn't safe for a public production site), **or**
+- Point `OPENROUTER_PROXY_URL` at your own backend/serverless function that holds the real key server-side (the recommended production setup).
+
+If neither is set, Nova automatically keeps using her local FAQ answers — nothing breaks.
 
 ---
 
@@ -102,4 +134,4 @@ A few things were filled in with reasonable placeholders since they weren't prov
 ## Contact
 
 - Email: novique.team@gmail.com
-- Phone / WhatsApp: +91 93669 15733
+- Phone / WhatsApp: +91 70059 66672

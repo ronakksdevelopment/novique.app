@@ -1,18 +1,20 @@
 /* ============================================================
    NOVIQUE — Service Worker
    Cache-first for app shell, network-first for HTML navigation.
-   v1.0.0 — bump CACHE_VERSION on every deploy to invalidate old caches
+   v1.5.0 — bump CACHE_VERSION on every deploy to invalidate old caches
    ============================================================ */
 
-var CACHE_VERSION = 'novique-v1.0.0';
-var RUNTIME_CACHE = 'novique-runtime-v1.0.0';
+var CACHE_VERSION = 'novique-v1.5.0';
+var RUNTIME_CACHE = 'novique-runtime-v1.5.0';
 
 var APP_SHELL = [
   './',
   './index.html',
   './css/style.css',
   './css/fonts.css',
+  './js/config.openrouter.js',
   './js/app.js',
+  './js/doodle-cursor.js',
   './manifest.json',
   './icons/icon-72.png',
   './icons/icon-96.png',
@@ -44,15 +46,10 @@ var APP_SHELL = [
   './vendor/fontawesome/webfonts/fa-solid-900.woff2',
   './vendor/fontawesome/webfonts/fa-brands-400.woff2',
   './vendor/fontawesome/webfonts/fa-regular-400.woff2',
-  './vendor/fonts/sora/sora-latin-400-normal.woff2',
-  './vendor/fonts/sora/sora-latin-600-normal.woff2',
-  './vendor/fonts/sora/sora-latin-700-normal.woff2',
-  './vendor/fonts/sora/sora-latin-800-normal.woff2',
-  './vendor/fonts/manrope/manrope-latin-400-normal.woff2',
-  './vendor/fonts/manrope/manrope-latin-500-normal.woff2',
-  './vendor/fonts/manrope/manrope-latin-600-normal.woff2',
-  './vendor/fonts/manrope/manrope-latin-700-normal.woff2',
-  './vendor/fonts/manrope/manrope-latin-800-normal.woff2'
+  './vendor/fonts/permanent-marker/permanent-marker-latin-400-normal.woff2',
+  './vendor/fonts/kalam/kalam-latin-300-normal.woff2',
+  './vendor/fonts/kalam/kalam-latin-400-normal.woff2',
+  './vendor/fonts/kalam/kalam-latin-700-normal.woff2'
 ];
 
 self.addEventListener('install', function (event) {
