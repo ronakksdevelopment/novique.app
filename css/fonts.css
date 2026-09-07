@@ -1,69 +1,34 @@
 /* ============================================================
    NOVIQUE — Self-hosted fonts
-   Sora (display) + Manrope (body). No external CDN dependency.
+   Permanent Marker (display) + Kalam (body). No external CDN dependency.
    ============================================================ */
 
 @font-face{
-  font-family:'Sora';
+  font-family:'Permanent Marker';
   font-style:normal;
   font-weight:400;
   font-display:swap;
-  src: url('../vendor/fonts/sora/sora-latin-400-normal.woff2') format('woff2');
-}
-@font-face{
-  font-family:'Sora';
-  font-style:normal;
-  font-weight:600;
-  font-display:swap;
-  src: url('../vendor/fonts/sora/sora-latin-600-normal.woff2') format('woff2');
-}
-@font-face{
-  font-family:'Sora';
-  font-style:normal;
-  font-weight:700;
-  font-display:swap;
-  src: url('../vendor/fonts/sora/sora-latin-700-normal.woff2') format('woff2');
-}
-@font-face{
-  font-family:'Sora';
-  font-style:normal;
-  font-weight:800;
-  font-display:swap;
-  src: url('../vendor/fonts/sora/sora-latin-800-normal.woff2') format('woff2');
+  src: url('../vendor/fonts/permanent-marker/permanent-marker-latin-400-normal.woff2') format('woff2');
 }
 
 @font-face{
-  font-family:'Manrope';
+  font-family:'Kalam';
+  font-style:normal;
+  font-weight:300;
+  font-display:swap;
+  src: url('../vendor/fonts/kalam/kalam-latin-300-normal.woff2') format('woff2');
+}
+@font-face{
+  font-family:'Kalam';
   font-style:normal;
   font-weight:400;
   font-display:swap;
-  src: url('../vendor/fonts/manrope/manrope-latin-400-normal.woff2') format('woff2');
+  src: url('../vendor/fonts/kalam/kalam-latin-400-normal.woff2') format('woff2');
 }
 @font-face{
-  font-family:'Manrope';
-  font-style:normal;
-  font-weight:500;
-  font-display:swap;
-  src: url('../vendor/fonts/manrope/manrope-latin-500-normal.woff2') format('woff2');
-}
-@font-face{
-  font-family:'Manrope';
-  font-style:normal;
-  font-weight:600;
-  font-display:swap;
-  src: url('../vendor/fonts/manrope/manrope-latin-600-normal.woff2') format('woff2');
-}
-@font-face{
-  font-family:'Manrope';
+  font-family:'Kalam';
   font-style:normal;
   font-weight:700;
   font-display:swap;
-  src: url('../vendor/fonts/manrope/manrope-latin-700-normal.woff2') format('woff2');
-}
-@font-face{
-  font-family:'Manrope';
-  font-style:normal;
-  font-weight:800;
-  font-display:swap;
-  src: url('../vendor/fonts/manrope/manrope-latin-800-normal.woff2') format('woff2');
+  src: url('../vendor/fonts/kalam/kalam-latin-700-normal.woff2') format('woff2');
 }

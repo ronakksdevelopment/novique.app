@@ -39,6 +39,36 @@
   });
 
   /* ---------------------------------------------------------
+     1b. LIVE TAB BAR HEIGHT SYNC
+     Fixed-position elements (install banner, toast, Nova launcher)
+     use calc(var(--tabbar-h) + ...) to sit above the bottom tab bar.
+     --tabbar-h is a static guess; on some Android/iOS browsers the
+     real rendered tab bar (safe-area insets, font scaling, browser
+     chrome resize) ends up taller than that guess, which pushes
+     fixed elements underneath it. Measure the real element and
+     publish it as --tabbar-h-live so everything anchors correctly.
+  --------------------------------------------------------- */
+  (function syncTabbarHeight() {
+    var tabbarEl = document.getElementById('tabbar');
+    if (!tabbarEl) return;
+    function apply() {
+      var h = tabbarEl.getBoundingClientRect().height;
+      if (h > 0) {
+        document.documentElement.style.setProperty('--tabbar-h-live', h + 'px');
+      }
+    }
+    apply();
+    window.addEventListener('resize', apply);
+    window.addEventListener('orientationchange', function () { setTimeout(apply, 200); });
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', apply);
+    }
+    if (window.ResizeObserver) {
+      new ResizeObserver(apply).observe(tabbarEl);
+    }
+  })();
+
+  /* ---------------------------------------------------------
      2. TAB NAVIGATION (app-shell, no long scroll)
   --------------------------------------------------------- */
   var pages = $all('.page');
@@ -58,6 +88,9 @@
     tabButtons.forEach(function (btn) {
       var isMatch = btn.getAttribute('data-tab') === tabName;
       btn.classList.toggle('active', isMatch);
+      if (isMatch && btn.closest('.desktop-nav')) {
+        btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+      }
     });
 
     if (!opts.silent) {
@@ -128,7 +161,7 @@
   });
 
   /* Highlight active item inside the More sheet when relevant */
-  var moreTabs = ['process', 'about', 'testimonials', 'faq', 'contact'];
+  var moreTabs = ['process', 'about', 'members', 'testimonials', 'faq', 'contact'];
   var originalActivateTab = activateTab;
   activateTab = function (tabName, opts) {
     originalActivateTab(tabName, opts);
@@ -391,6 +424,50 @@
   }
 
   /* ---------------------------------------------------------
+     10b. MEMBERS "APPLY TO JOIN" FORM — opens WhatsApp with
+     the application pre-filled (Static PWA: no backend, so we
+     hand off directly to WhatsApp, same as the contact quick-links).
+  --------------------------------------------------------- */
+  var applyForm = $('#applyForm');
+  var applySuccess = $('#applySuccess');
+  var APPLY_WHATSAPP_NUMBER = '917005966672'; // +91 70059 66672, international format, no + or spaces
+
+  if (applyForm) {
+    applyForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var name = $('#afname').value.trim();
+      var email = $('#afemail').value.trim();
+      var phone = $('#afphone') ? $('#afphone').value.trim() : '';
+      var role = $('#afrole').value;
+      var portfolio = $('#afportfolio') ? $('#afportfolio').value.trim() : '';
+      var message = $('#afmessage').value.trim();
+
+      if (!name || !email || !message) {
+        showToast('Please fill in all required fields', 'fa-triangle-exclamation');
+        return;
+      }
+
+      var text =
+        'Hi NoviQue, I would like to apply to join the team.\n\n' +
+        'Name: ' + name + '\n' +
+        'Email: ' + email + '\n' +
+        (phone ? 'Phone: ' + phone + '\n' : '') +
+        'Role: ' + role + '\n' +
+        (portfolio ? 'Portfolio: ' + portfolio + '\n' : '') +
+        '\nWhy I want to join:\n' + message;
+
+      var waUrl = 'https://wa.me/' + APPLY_WHATSAPP_NUMBER + '?text=' + encodeURIComponent(text);
+      window.open(waUrl, '_blank', 'noopener');
+
+      if (applySuccess) applySuccess.classList.add('show');
+      showToast('Opening WhatsApp…', 'fa-circle-check');
+      setTimeout(function () {
+        applyForm.reset();
+      }, 400);
+    });
+  }
+
+  /* ---------------------------------------------------------
      11. NOVA CHAT WIDGET
      No backend is wired up yet. Nova answers from a small local
      knowledge base about NoviQue (services, pricing, process,
@@ -500,7 +577,7 @@
     { keys: ['service', 'offer', 'what do you do', 'what can you build'],
       reply: "We design and build websites, mobile apps, UI/UX, and brand identities, plus AI solutions, digital marketing and SEO. Tell me a bit about your project and I can point you to the right service." },
     { keys: ['cost', 'price', 'pricing', 'how much', 'budget'],
-      reply: "Our plans start around ₹79,999 for a Starter website and ₹2,19,999 for our Growth package, with custom quotes for larger builds. Check the Pricing tab for full details, or tell me your project and I'll suggest a fit." },
+      reply: "Our launch pricing starts at ₹8,000 for a website (20% off your first project, plus 2 free updates every week) and ₹10,000 for a mobile app (4 free updates a month, with free publishing and lifetime hosting included). Larger builds get a custom quote. Check the Pricing tab for full details, or tell me your project and I'll suggest a fit." },
     { keys: ['how long', 'timeline', 'turnaround', 'duration'],
       reply: "Most projects run 2 to 16 weeks depending on scope. A simple marketing site is on the faster end, a full app or brand system takes longer. Once we know your goals we can give you an exact timeline." },
     { keys: ['start', 'get started', 'begin', 'kick off'],
@@ -510,7 +587,7 @@
     { keys: ['support', 'maintenance', 'after launch'],
       reply: "Yes, every plan includes a support window after launch, and we offer ongoing maintenance and SEO retainers for continued care." },
     { keys: ['contact', 'email', 'phone', 'whatsapp', 'reach'],
-      reply: "You can reach us anytime at novique.team@gmail.com, call or WhatsApp us at +91 93669 15733, or use the Contact tab to send a project inquiry directly." },
+      reply: "You can reach us anytime at novique.team@gmail.com, call or WhatsApp us at +91 70059 66672, or use the Contact tab to send a project inquiry directly." },
     { keys: ['currency', 'inr', 'usd', 'dollar', 'rupee'],
       reply: "Prices are listed in Indian Rupees (₹) by default. You can switch to an approximate USD view using the currency selector at the top of the app." },
     { keys: ['payment', 'pay', 'invoice'],
@@ -527,7 +604,84 @@
         if (lower.indexOf(entry.keys[j]) !== -1) return entry.reply;
       }
     }
-    return "Good question. I don't have an exact answer for that yet, but the team can help directly — reach out at novique.team@gmail.com, WhatsApp +91 93669 15733, or use the Contact tab and we'll follow up within one business day.";
+    return "Good question. I don't have an exact answer for that yet, but the team can help directly — reach out at novique.team@gmail.com, WhatsApp +91 70059 66672, or use the Contact tab and we'll follow up within one business day.";
+  }
+
+  /* ---------------------------------------------------------
+     11b. OPTIONAL AI BACKEND (OpenRouter)
+     If js/config.openrouter.js supplies an API key or a proxy
+     URL, Nova answers using a real model via OpenRouter instead
+     of the local FAQ list above. If nothing is configured, or the
+     request fails for any reason, Nova falls back to the local
+     FAQ bot automatically — the widget always keeps working.
+  --------------------------------------------------------- */
+  function getAiConfig() {
+    return window.NOVIQUE_AI_CONFIG || {};
+  }
+
+  function aiIsConfigured() {
+    var cfg = getAiConfig();
+    return !!(cfg.OPENROUTER_PROXY_URL || cfg.OPENROUTER_API_KEY);
+  }
+
+  function getNovaReplyAsync(userText, callback) {
+    var cfg = getAiConfig();
+
+    if (!aiIsConfigured()) {
+      callback(getNovaReply(userText));
+      return;
+    }
+
+    var recentHistory = history.slice(-8).map(function (m) {
+      return { role: m.role === 'assistant' ? 'assistant' : 'user', content: m.content };
+    });
+
+    // Option B: call your own backend/proxy (recommended for production —
+    // keeps the real OpenRouter key server-side, never shipped to the browser).
+    if (cfg.OPENROUTER_PROXY_URL) {
+      fetch(cfg.OPENROUTER_PROXY_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: userText, history: recentHistory })
+      })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          if (data && data.reply) callback(data.reply);
+          else callback(getNovaReply(userText));
+        })
+        .catch(function () { callback(getNovaReply(userText)); });
+      return;
+    }
+
+    // Option A: direct browser call to OpenRouter using a key from
+    // config.openrouter.js. Quick to test, but NOT safe for a public
+    // production site — see the warning in that file.
+    if (cfg.OPENROUTER_API_KEY) {
+      var messages = [{ role: 'system', content: cfg.SYSTEM_PROMPT || 'You are Nova, a helpful assistant for NoviQue.' }]
+        .concat(recentHistory)
+        .concat([{ role: 'user', content: userText }]);
+
+      fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + cfg.OPENROUTER_API_KEY
+        },
+        body: JSON.stringify({
+          model: cfg.OPENROUTER_MODEL || 'openai/gpt-4o-mini',
+          messages: messages
+        })
+      })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          var reply = data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
+          callback(reply || getNovaReply(userText));
+        })
+        .catch(function () { callback(getNovaReply(userText)); });
+      return;
+    }
+
+    callback(getNovaReply(userText));
   }
 
   function showTyping() {
@@ -550,13 +704,20 @@
     input.value = '';
     autoResize();
     sendBtn.disabled = true;
+    sendBtn.classList.add('sending');
     showTyping();
-    setTimeout(function () {
-      hideTyping();
-      var reply = getNovaReply(text);
-      pushMessage('assistant', reply);
-      sendBtn.disabled = false;
-    }, 500 + Math.random() * 400);
+    var start = Date.now();
+    getNovaReplyAsync(text, function (reply) {
+      var elapsed = Date.now() - start;
+      var minDelay = 500 + Math.random() * 400;
+      var wait = Math.max(0, minDelay - elapsed);
+      setTimeout(function () {
+        hideTyping();
+        pushMessage('assistant', reply);
+        sendBtn.disabled = false;
+        sendBtn.classList.remove('sending');
+      }, wait);
+    });
   }
 
   function autoResize() {
